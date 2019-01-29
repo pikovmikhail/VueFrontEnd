@@ -1,0 +1,110 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <meta http-equiv="Content-Language" content="en-us">
+
+    <title>Invoice Notification</title>
+
+    <meta name="ROBOTS" content="ALL">
+    <meta http-equiv="imagetoolbar" content="no">
+    <meta name="MSSmartTagsPreventParsing" content="true">
+    <link href="http://fonts.googleapis.com/css?family=Lato:400,700" rel="stylesheet" type="text/css">
+  </head>
+  <body style="background-color:#F3F5F7; color:#506B86;">
+  <p>
+{% assign payor_name = event.payor.company_name %}
+{% capture payor_address %}
+  {{event.payor.address.street1}}<br>
+  {% if event.payor.address.street2 %}
+    {{event.payor.address.street2}}<br>
+  {% endif %}
+  {{event.payor.address.city}}, {{event.payor.address.state)}}, {{event.payor.address.country}}<br>
+  {{event.payor.address.postal_code)}}
+ {% endcapture %}
+{% assign message = event.invoice.payor_message %}
+{% assign amount = event.invoice.full_amount %}
+{% assign currency = event.invoice.currency %}
+{% assign due = event.invoice.due_date %}
+{% assign lines = event.invoice.line_items %}
+{% assign tax = event.invoice.total_tax %}
+
+{% assign ft_company = 'FundThrough Inc.' %}
+{% if currency == 'USD' %}
+  {% assign ft_company = 'FundThrough USA Inc.' %}
+{% endif %}
+
+  </p>
+    <div style="text-align:center; font-style:italic; font-size:9; margin-bottom:80px;">
+      This statement is best read on desktop.
+    </div>
+
+     <div style="text-align:center">
+      <img src="https://www.fundthrough.com/wp-content/uploads/2017/04/FT_logo_dark.png" alt="{{ft_company}}" style="width:200px; height:auto">
+    </div>
+    <div style="text-align:center; font-size:26px; margin-bottom:40px;">
+      Invoice Notification
+    </div>
+
+    <div style="background-color:#F3F5F7; max-width:600px; margin:0px auto; padding:35px 20px;">
+      <p style="font-size:16px; color:#4A4A4A;">
+        To: {{payor_name}}
+      </p>
+      <p style="font-size:16px; color:#4A4A4A">
+        {{message}}
+       <br>
+      </p>
+
+    </div>
+    <div style="display:flex; margin-top:35px;">
+      <div style="flex:1; margin-left: 25px;">
+        <h1 style="font-size:17px;"><u>Details of this invoice are as follows:</u></h1>
+        <p style="font-size:14px;">
+          <br>
+          <em>Invoice Amount:</em><br>
+          {{amount}} {{currency}}<br><br>
+          <em>Due Date:</em><br>
+          {{due}}<br><br>
+          <em>Invoice to:</em><br>
+          {{payor_name}}<br>
+          {{payor_address}}
+        </p>
+      </div>
+    </div>
+    <div style="margin-top:37px;">
+      <table style="width:100%; table-layout:fixed; word-wrap:break-word; font-size:12px;">
+        <tr style="color:white; background-color:#19B89A;">
+          <td colspan="5" style="text-align:center; border:solid 1px; padding-top:5px; padding-bottom:5px;">Description</td>
+          <td style="text-align:center; border:solid 1px;">Item Ref</td>
+          <td style="text-align:center; border:solid 1px;">Amount</td>
+        </tr>
+        {% for line in lines %}
+          {% if line.DetailType == 'SalesItemLineDetail' %}
+          <tr>
+            <td colspan="5" style="text-align: left; border: none;">{{ line.Description }}</td>
+            <td style="text-align: center; border: none;">{{ line.SalesItemLineDetail.ItemRef  }}</td>
+            <td style="text-align: right; border: none;">{{ line.Amount }}</td>
+          </tr>
+          {% else %}
+          <tr style="background-color:#ECECEC;">
+            <td colspan="5" style="text-align: left; border: none; border-bottom: solid 2px #19B89A;"><b>Subtotal</b></td>
+            <td style="text-align: right; border: none; border-bottom: solid 2px #19B89A;"></td>
+            <td style="text-align: right; border: none; border-bottom: solid 2px #19B89A;">{{ line.Amount }}</td>
+          </tr>
+          {% endif %}
+        {% endfor %}
+        <tr>
+          <td colspan="5" style="text-align: left; border: none;"><b>Tax</b></td>
+          <td style="text-align: right; border: none;"></td>
+          <td style="text-align: right; border: none;">{{ tax }}</td>
+        </tr>
+        <tr style="color:white; background-color:#19B89A;">
+            <td colspan="5" style="text-align: left; border: none;"><b>Grand Total</b></td>
+            <td style="text-align: right; border: none;"></td>
+            <td style="text-align: right; border: none;"><b>{{ amount  }}</b></td>
+          </tr>
+      </table>
+    </div>
+  </body>
+</html>
